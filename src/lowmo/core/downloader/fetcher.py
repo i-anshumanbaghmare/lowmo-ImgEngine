@@ -1,22 +1,27 @@
 import requests
 from pathlib import Path
 
+
+# Core network streaming logic for downloading files. This is a low-level utility that can be used by various source-specific downloaders in core/downloader.
 def stream_bytes(url: str, headers: dict, save_path: Path, filename: str, progress_callback=None) -> str:
     """Pure network streaming implementation. Reports status back to UI layer."""
     if save_path.exists():
         return str(save_path)
 
     try:
+        # Note: We set allow_redirects=True to handle cases where the initial URL might redirect to a signed URL or mirror. This is common with platforms like Hugging Face.
         response = requests.get(url, headers=headers, stream=True, allow_redirects=True)
+        
         content_type = response.headers.get('Content-Type', '')
 
-        # Security Check: Block HTML pages
+        # Security Check: Block HTML pages, so only actual file content is accepted. This can help catch auth failures or gated content that returns an HTML page instead of the expected model file.
         if "text/html" in content_type:
             debug_path = save_path.with_suffix(".html")
             with open(debug_path, "w", encoding="utf-8") as df:
                 df.write(response.text)
             raise RuntimeError(f"Auth failed or gated content. Received HTML instead of a model file. Saved debug log to {debug_path}")
 
+        # Stream the content in chunks and write to disk, while updating progress.
         response.raise_for_status()
         total_size = int(response.headers.get('content-length', 0))
         downloaded = 0
