@@ -1,0 +1,33 @@
+# --- Python & Environment ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# --- IDE & OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Project Specific (Lowmo-ImgEng) ---
+# Ignore model downloads, logs, and databases
+models/
+logs/
+*.log
+*.sqlite
+*.db
+
+# --- Secrets (CRITICAL) ---
+# Do not commit your API keys!
+.env
+secret.json
+credentials.json
+
+# --- Tests ---
+# Ignore test outputs and temporary files
+test_outputs/
+temp/
