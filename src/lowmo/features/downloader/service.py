@@ -1,7 +1,7 @@
 from pathlib import Path
-from src.lowmo.core.downloader.url_logic import sanitize_url, detect_source
-from src.lowmo.core.downloader.hf_downloader import download_from_huggingface
-from src.lowmo.core.downloader.civitai_downloader import download_from_civitai
+from src.lowmo.core.downloader.downloader_utils import sanitize_url, detect_source
+from src.lowmo.core.downloader.hf_downloader import download_from_huggingface, get_hf_metadata
+from src.lowmo.core.downloader.civitai_downloader import download_from_civitai, get_civitai_metadata
 
 MODEL_ROOT = Path("data") # Or imported from src.lowmo.constants 
 
@@ -15,16 +15,24 @@ def download_model(source: str, url: str, filename: str, api_key: str = None, as
     if not filename:
         raise ValueError("Filename required for downloads")
 
-    # Resolve destination filesystem directory structures safely
-    save_dir = MODEL_ROOT / asset_type 
-    save_dir.mkdir(parents=True, exist_ok=True)
-
     # Clean raw string inputs
     clean_url = sanitize_url(url)
     
     # Dynamically detect source type if the UI selection is ambiguous or set to auto
     if not source or source == "auto":
         source = detect_source(clean_url)
+
+    # Resolve "auto" asset type dynamically if needed
+    if asset_type == "auto":
+        try:
+            info = fetch_model_info(source, clean_url, api_key)
+            asset_type = info.get("asset_type", "checkpoints")
+        except Exception:
+            asset_type = "checkpoints"
+
+    # Resolve destination filesystem directory structures safely
+    save_dir = MODEL_ROOT / asset_type 
+    save_dir.mkdir(parents=True, exist_ok=True)
 
     # Route request to source-specific execution pathways in the core downloader module
     if source == "huggingface":
@@ -35,3 +43,21 @@ def download_model(source: str, url: str, filename: str, api_key: str = None, as
     
     else:
         raise ValueError(f"Unknown or unsupported source: {source}") 
+
+
+def fetch_model_info(source: str, url: str, api_key: str = None) -> dict:
+    """
+    Orchestrator to retrieve model metadata (filename, asset_type)
+    from source platforms before starting the download.
+    """
+    clean_url = sanitize_url(url)
+    
+    if not source or source == "auto":
+        source = detect_source(clean_url)
+        
+    if source == "huggingface":
+        return get_hf_metadata(clean_url)
+    elif source == "civitai":
+        return get_civitai_metadata(clean_url, api_key=api_key)
+    else:
+        raise ValueError(f"Unknown or unsupported source: {source}")

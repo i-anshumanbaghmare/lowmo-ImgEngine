@@ -42,3 +42,13 @@ def stream_bytes(url: str, headers: dict, save_path: Path, filename: str, progre
         if save_path.exists():
             save_path.unlink() # Drop incomplete files
         raise RuntimeError(f"Download stream broken: {e}")
+
+
+def fetch_json(url: str, headers: dict = None) -> dict:
+    """Helper to perform standard GET request and return parsed JSON."""
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"Failed to retrieve metadata: {e}")
