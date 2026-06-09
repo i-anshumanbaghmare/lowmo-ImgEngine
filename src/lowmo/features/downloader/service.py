@@ -6,12 +6,15 @@ from src.lowmo.core.downloader.civitai_downloader import download_from_civitai, 
 MODEL_ROOT = Path("data") # Or imported from src.lowmo.constants 
 
 
+
 # This is the core service layer for the Downloader feature. It contains the main business logic and orchestration for handling download requests.
-def download_model(source: str, url: str, filename: str, api_key: str = None, asset_type: str = "checkpoints", progress=None) -> str:
+def download_model(source: str = "auto", url: str = "", filename: str = "", api_key: str = None, asset_type: str = "checkpoints", progress=None) -> str:
     """
     Core orchestrator method that acts as the entrypoint for Feature execution.
     Accepts raw inputs and delegates tasks downwards.
     """
+    if not url:
+        raise ValueError("URL required for downloads")
     if not filename:
         raise ValueError("Filename required for downloads")
 
@@ -25,7 +28,7 @@ def download_model(source: str, url: str, filename: str, api_key: str = None, as
     # Resolve "auto" asset type dynamically if needed
     if asset_type == "auto":
         try:
-            info = fetch_model_info(source, clean_url, api_key)
+            info = fetch_model_info(source=source, url=clean_url, api_key=api_key)
             asset_type = info.get("asset_type", "checkpoints")
         except Exception:
             asset_type = "checkpoints"
@@ -45,19 +48,30 @@ def download_model(source: str, url: str, filename: str, api_key: str = None, as
         raise ValueError(f"Unknown or unsupported source: {source}") 
 
 
-def fetch_model_info(source: str, url: str, api_key: str = None) -> dict:
+
+
+def fetch_model_info(source: str = "auto", url: str = "", api_key: str = None) -> dict:
     """
     Orchestrator to retrieve model metadata (filename, asset_type)
     from source platforms before starting the download.
     """
+    if not url:
+        raise ValueError("URL required to fetch model info")
+
     clean_url = sanitize_url(url)
     
     if not source or source == "auto":
         source = detect_source(clean_url)
         
     if source == "huggingface":
-        return get_hf_metadata(clean_url)
+        info = get_hf_metadata(clean_url)
     elif source == "civitai":
-        return get_civitai_metadata(clean_url, api_key=api_key)
+        info = get_civitai_metadata(clean_url, api_key=api_key)
     else:
         raise ValueError(f"Unknown or unsupported source: {source}")
+
+    # Inject the auto-detected source back into the dictionary for UI display tracking
+    if isinstance(info, dict):
+        info["source"] = source
+
+    return info

@@ -16,6 +16,15 @@ def build_app():
 
 
         with gr.Tab("Model Loader"):
-            gr.Markdown("Model Loader UI goes here...")
+            gr.Markdown("Coming Soon")
+
+        with gr.Tab("Image Generation"):
+            gr.Markdown("Coming Soon")
+
+        with gr.Tab("Benchmark"):
+            gr.Markdown("Coming Soon")
+
+        with gr.Tab("System Monitor"):
+            gr.Markdown("Coming Soon")
 
     return demo
