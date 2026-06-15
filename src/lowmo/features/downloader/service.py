@@ -1,3 +1,5 @@
+# src\lowmo\features\downloader\service.py
+
 from pathlib import Path
 from src.lowmo.core.downloader.downloader_utils import sanitize_url, detect_source
 from src.lowmo.core.downloader.hf_downloader import download_from_huggingface, get_hf_metadata
@@ -61,14 +63,12 @@ def fetch_model_info(source: str = "auto", url: str = "", api_key: str = None) -
     clean_url = sanitize_url(url)
     
     if not source or source == "auto":
-        source = detect_source(clean_url)
-        
-    if source == "huggingface":
-        info = get_hf_metadata(clean_url)
-    elif source == "civitai":
-        info = get_civitai_metadata(clean_url, api_key=api_key)
-    else:
+        source, source_type = detect_source(clean_url)
+        if source == "unknown":
         raise ValueError(f"Unknown or unsupported source: {source}")
+     
+    info = get_meta(url=clean_url, source=source, source_type=source_type, api_key=api_key)
+    
 
     # Inject the auto-detected source back into the dictionary for UI display tracking
     if isinstance(info, dict):

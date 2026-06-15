@@ -1,3 +1,5 @@
+# src\lowmo\core\downloader\fetcher.py
+
 import requests
 from pathlib import Path
 
@@ -51,4 +53,16 @@ def fetch_json(url: str, headers: dict = None) -> dict:
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
-        raise RuntimeError(f"Failed to retrieve metadata: {e}")
+        raise RuntimeError(f"Failed to retrieve metadata: {e}")
+
+
+def get_metadata
+    """
+    Centralized metadata retrieval orchestrator that routes to source-specific logic based on detected source type.
+    This abstracts away the complexities of different URL formats and API requirements for each platform.
+    """
+    if source == "huggingface":
+        return get_hf_metadata(url)
+    
+    elif source == "civitai":
+        return get_civitai_metadata(url, api_key=api_key)

@@ -1,47 +1,34 @@
+# src\lowmo\core\downloader\civitai_downloader.py
+
 import os
 import re
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 from .fetcher import stream_bytes, fetch_json
 
-def download_from_civitai(url: str, filename: str, save_dir: Path, api_key: str = None, progress_callback=None) -> str:
-    save_path = save_dir / filename
-    
-    # Resolve authorization token priority rules
+def civit_header(api_key: str = None) -> dict:
     final_key = api_key or os.environ.get("CIVITAI_API_KEY") or "b32e904e5113676741e9f622c1fc6bbc"
-    headers = {
+    return {
         "Authorization": f"Bearer {final_key}",
         "User-Agent": "lowmo-imgeng/1.0"
     }
+
+def download_from_civitai(url: str, filename: str, save_dir: Path, api_key: str = None, progress_callback=None) -> str:
+    save_path = save_dir / filename
+    headers = civit_header(api_key)
     
     return stream_bytes(url, headers, save_path, filename, progress_callback)
 
 
-def get_civitai_metadata(url: str, api_key: str = None) -> dict:
+def get_civitai_metadata(url: str, source_type: str, api_key: str = None) -> dict:
     """
-    Parses Civitai URL, queries Civitai API for model/version metadata,
-    and returns a standardized dictionary with filename and asset_type.
+    Parses Civitai URL, 
+    Queries Civitai API for model/version metadata,
+    Returns a standardized dictionary with filename and asset_type.
     """
-    final_key = api_key or os.environ.get("CIVITAI_API_KEY") or "b32e904e5113676741e9f622c1fc6bbc"
-    headers = {
-        "Authorization": f"Bearer {final_key}",
-        "User-Agent": "lowmo-imgeng/1.0"
-    }
-
-    # Extract version ID or model ID
-    parsed_url = urlparse(url)
-    query_params = parse_qs(parsed_url.query)
+    headers = civit_header()
     
-    version_id = None
-    if "modelVersionId" in query_params:
-        version_id = query_params["modelVersionId"][0]
-        
-    if not version_id:
-        # Check for /api/download/models/{id}
-        api_match = re.search(r"/api/download/models/(\d+)", url)
-        if api_match:
-            version_id = api_match.group(1)
-            
+
     if not version_id:
         # Check for /models/{id}
         model_match = re.search(r"/models/(\d+)", url)
@@ -59,7 +46,10 @@ def get_civitai_metadata(url: str, api_key: str = None) -> dict:
 
     # Fetch model version metadata
     version_api_url = f"https://civitai.com/api/v1/model-versions/{version_id}"
-    version_data = fetch_json(version_api_url, headers=headers)
+
+    
+def parse_metadata_from_versionid(url: str, api_key: str = None) -> dict:
+    version_data = fetch_json(url, headers=headers)
 
     # 1. Determine filename
     files = version_data.get("files", [])

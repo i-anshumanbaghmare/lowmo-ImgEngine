@@ -1,3 +1,5 @@
+# src\lowmo\features\downloader\events.py
+
 import gradio as gr
 from .service import download_model, fetch_model_info
 
