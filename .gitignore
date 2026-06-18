@@ -5,6 +5,7 @@ __pycache__/
 venv/
 .venv/
 env/
+project_structure.py
 
 # --- IDE & OS ---
 .vscode/

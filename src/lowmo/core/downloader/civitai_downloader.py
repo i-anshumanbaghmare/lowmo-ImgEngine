@@ -1,70 +1,40 @@
-# src\lowmo\core\downloader\civitai_downloader.py
-
 import os
 import re
 from pathlib import Path
-from urllib.parse import urlparse, parse_qs
 from .fetcher import stream_bytes, fetch_json
+from .downloader_utils import reconstruct_civitai_url
 
 def civit_header(api_key: str = None) -> dict:
-    final_key = api_key or os.environ.get("CIVITAI_API_KEY") or "b32e904e5113676741e9f622c1fc6bbc"
-    return {
-        "Authorization": f"Bearer {final_key}",
-        "User-Agent": "lowmo-imgeng/1.0"
-    }
+    final_key = api_key or os.environ.get("CIVITAI_API_KEY")
+    headers = {"User-Agent": "lowmo-imgeng/1.0"}
+    if final_key:
+        headers["Authorization"] = f"Bearer {final_key}"
+    return headers
 
 def download_from_civitai(url: str, filename: str, save_dir: Path, api_key: str = None, progress_callback=None) -> str:
     save_path = save_dir / filename
     headers = civit_header(api_key)
-    
     return stream_bytes(url, headers, save_path, filename, progress_callback)
 
-
-def get_civitai_metadata(url: str, source_type: str, api_key: str = None) -> dict:
-    """
-    Parses Civitai URL, 
-    Queries Civitai API for model/version metadata,
-    Returns a standardized dictionary with filename and asset_type.
-    """
-    headers = civit_header()
-    
-
-    if not version_id:
-        # Check for /models/{id}
-        model_match = re.search(r"/models/(\d+)", url)
-        if model_match:
-            model_id = model_match.group(1)
-            # Query model endpoint to get model versions
-            model_api_url = f"https://civitai.com/api/v1/models/{model_id}"
-            model_data = fetch_json(model_api_url, headers=headers)
-            versions = model_data.get("modelVersions", [])
-            if versions:
-                version_id = versions[0].get("id")
-                
-    if not version_id:
-        raise ValueError("Could not extract a model version ID or model ID from the Civitai URL.")
-
-    # Fetch model version metadata
-    version_api_url = f"https://civitai.com/api/v1/model-versions/{version_id}"
-
-    
-def parse_metadata_from_versionid(url: str, api_key: str = None) -> dict:
-    version_data = fetch_json(url, headers=headers)
+def parse_metadata_from_versionid(url_or_json, api_key: str = None) -> dict:
+    """Extracts structured model metadata from a version API URL string or dictionary payload."""
+    headers = civit_header(api_key)
+    if isinstance(url_or_json, str):
+        version_data = fetch_json(url_or_json, headers=headers)
+    else:
+        version_data = url_or_json
 
     # 1. Determine filename
     files = version_data.get("files", [])
     filename = "model.safetensors"
     if files:
-        # Find primary file if exists, otherwise first file
         primary_file = next((f for f in files if f.get("primary")), files[0])
         filename = primary_file.get("name", filename)
 
-    # 2. Determine asset_type
+    # 2. Determine asset_type mapping
     model_info = version_data.get("model", {})
     civitai_type = model_info.get("type", "").lower()
     
-    # Map Civitai type to our dropdown selection:
-    # Choices: ["checkpoints", "loras", "vae", "embeddings", "hypernetworks"]
     asset_type = "checkpoints"
     if "checkpoint" in civitai_type:
         asset_type = "checkpoints"
@@ -81,3 +51,8 @@ def parse_metadata_from_versionid(url: str, api_key: str = None) -> dict:
         "filename": filename,
         "asset_type": asset_type
     }
+
+def get_civitai_metadata(url: str, source_type: str, api_key: str = None) -> dict:
+    """Resolves any variant of Civitai input and extracts standardized metadata parameters."""
+    version_api_url = reconstruct_civitai_url(url, source_type)
+    return parse_metadata_from_versionid(version_api_url, api_key=api_key)
