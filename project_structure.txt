@@ -14,7 +14,6 @@
 ├── myproject.toml
 ├── project_structure.py
 ├── pytest.ini
-├── requirements.txt
 ├── src
 │   └── lowmo
 │       ├── __init__.py

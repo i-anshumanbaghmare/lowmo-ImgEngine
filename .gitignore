@@ -6,6 +6,7 @@ venv/
 .venv/
 env/
 project_structure.py
+project_structure.txt
 
 # --- IDE & OS ---
 .vscode/
