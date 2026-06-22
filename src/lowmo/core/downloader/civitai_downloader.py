@@ -1,10 +1,10 @@
 import os
 import re
 from pathlib import Path
-from .fetcher import stream_bytes, fetch_json
-from .downloader_utils import reconstruct_civitai_url
+from fetcher import stream_bytes, fetch_json
+from downloader_utils import reconstruct_civitai_url
 
-def civit_header(api_key: str = None) -> dict:
+def civit_header(api_key: str = None) -> dict[str]:
     final_key = api_key or os.environ.get("CIVITAI_API_KEY")
     headers = {"User-Agent": "lowmo-imgeng/1.0"}
     if final_key:

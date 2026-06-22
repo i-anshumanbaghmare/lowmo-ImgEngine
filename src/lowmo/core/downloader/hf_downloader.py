@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 from urllib.parse import urlparse
-from .downloader_utils import reconstruct_hf_url
-from .fetcher import stream_bytes, fetch_json
+from downloader_utils import reconstruct_hf_url
+from fetcher import stream_bytes, fetch_json
 
 def download_from_huggingface(url: str, filename: str, save_dir: Path, progress_callback=None) -> str:
     # 1. Apply URL reconstruction logic
