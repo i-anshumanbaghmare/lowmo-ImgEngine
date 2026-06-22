@@ -1,7 +1,7 @@
 
 import gradio as gr
-from features.downloader.ui import create_downloader_ui
-from features.downloader.events import bind_events
+from src.lowmo.features.downloader.ui import create_downloader_ui
+from src.lowmo.features.downloader.events import bind_events
 
 def build_app():
     with gr.Blocks(title="Image Generation Test Bench", theme = gr.themes.Ocean()) as demo:

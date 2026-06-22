@@ -2,7 +2,7 @@
 
 from urllib.parse import urlparse
 import re
-from fetcher import fetch_json
+from src.lowmo.core.downloader.fetcher import fetch_json
 
 def sanitize_url(url: str) -> str:
     """Cleans and normalizes URL input by stripping whitespace and extra copy-paste wrappers."""
@@ -112,7 +112,7 @@ def reconstruct_civitai_url(url: str, source_type: str) -> str:
     
     elif source_type == "hash_code":        # 2. Handle Standalone Cryptographic Hashes
         hash_api_url = f"https://civitai.com/api/v1/model-versions/by-hash/{url}"
-        version_json = fetch_json(hash_api_url, )
+        version_json = fetch_json(cleaned, hash)
         if "id" in version_json:
             return f"{BASE_API_URL}/model-versions/{version_json['id']}"
         raise ValueError(f"Could not resolve version metadata using hash identifier: {url}")

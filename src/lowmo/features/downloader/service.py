@@ -1,9 +1,9 @@
 # src\lowmo\features\downloader\service.py
 
 from pathlib import Path
-from core.downloader.downloader_utils import sanitize_url, detect_source, get_metadata, reconstruct_url
-from core.downloader.hf_downloader import download_from_huggingface
-from core.downloader.civitai_downloader import download_from_civitai
+from src.lowmo.core.downloader.downloader_utils import sanitize_url, detect_source, get_metadata, reconstruct_url
+from src.lowmo.core.downloader.hf_downloader import download_from_huggingface
+from src.lowmo.core.downloader.civitai_downloader import download_from_civitai
 
 MODEL_ROOT = Path("data")
 
