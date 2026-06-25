@@ -1,3 +1,5 @@
+# tests\downloader\test_civitai_downloader.py
+
 from unittest.mock import patch
 
 import pytest

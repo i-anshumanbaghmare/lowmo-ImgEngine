@@ -45,7 +45,7 @@ def stream_bytes(url: str, headers: dict, save_path: Path, filename: str, progre
             save_path.unlink() # Drop incomplete files
         raise RuntimeError(f"Download stream broken: {e}")
 
-
+# Use of API metadata reading.
 def fetch_json(url: str, headers: dict = None) -> dict:
     """Helper to perform standard GET request and return parsed JSON."""
     try:

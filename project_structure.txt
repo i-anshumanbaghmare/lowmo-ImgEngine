@@ -11,9 +11,10 @@
 │           └── nodeids
 ├── README.md
 ├── app.py
-├── myproject.toml
-├── project_structure.py
+├── pyproject.toml
 ├── pytest.ini
+├── scripts
+│   └── project_structure.py
 ├── src
 │   └── lowmo
 │       ├── __init__.py
