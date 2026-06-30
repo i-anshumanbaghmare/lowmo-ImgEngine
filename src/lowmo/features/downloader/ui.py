@@ -3,8 +3,20 @@
 import gradio as gr
 
 def create_downloader_ui():
+    with gr.Tabs():
+        with gr.Tab("Quick Models"):
+            create_quick_downloader_ui()
+            
+        with gr.Tab("URL Download"):
+            components = create_adv_downloader_ui()
+
+        
+
+    return components
+
+def create_adv_downloader_ui():
     gr.Markdown("## 📥 Model Downloader")
-    
+
     with gr.Group():
         with gr.Row():
             url = gr.Textbox(
@@ -35,7 +47,7 @@ def create_downloader_ui():
                 placeholder="Paste token if model is private...",
                 scale=1
             )
-            
+
     with gr.Row():
         download_btn = gr.Button("Start Download", variant="primary", size="lg")
 
@@ -58,4 +70,60 @@ def create_downloader_ui():
         "api_key_input": api_key,
         "filename_output": filename,
         "asset_type_output": asset_type
+    }
+
+# Work is on...
+def create_quick_downloader_ui():
+    gr.Markdown("## ⚡ Quick Models")
+
+    # Theme
+    theme = gr.Dropdown(
+        choices=[
+            "General",
+            "Photorealistic",
+            "Toons & Art"
+        ],
+        value="General",
+        label="🎨 Theme"
+    )
+
+    gr.Markdown("### ⭐ Recommended Packages")
+
+    @gr.render(inputs=theme)
+    def package_area(selected):
+
+        package = engine.get_package(selected)
+
+        with gr.Row():
+
+            for asset in package.values():
+
+                create_package_card(asset)
+            
+    
+
+    gr.Markdown("### ➕ Recommended Add-ons")
+
+    @gr.render(inputs=theme)
+    def addon_area(selected):
+
+        addons = engine.get_addons(selected)
+
+        for addon in addons:
+
+            create_addon_card(addon)
+
+    with gr.Row():
+        download_btn = gr.Button("Start Download", variant="primary", size="lg")
+
+    with gr.Row():
+        status_output = gr.Textbox(
+            label="📢 Status", value="Ready", min_width=100, interactive=False, scale=4
+        )
+
+    return {
+        "theme": theme,
+        "packages": package_cards,
+        "addons": addon_cards,
+        "status": status_output,
     }
